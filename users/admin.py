@@ -1,14 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .forms import CustomUserChangeForm, CustomUserCreationForm
 from .models import User
 
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
     model = User
 
     list_display = ("email", "username", "phone", "country", "is_staff", "is_active")
@@ -57,3 +54,14 @@ class CustomUserAdmin(UserAdmin):
 
     search_fields = ("email", "username", "phone")
     ordering = ("email",)
+
+    # Отображение аватара в админке (опционально)
+    readonly_fields = ("avatar_preview",)
+
+    def avatar_preview(self, obj):
+        if obj.avatar:
+            return f'<img src="{obj.avatar.url}" style="max-height: 100px;" />'
+        return "Нет аватара"
+
+    avatar_preview.allow_tags = True
+    avatar_preview.short_description = "Превью аватара"

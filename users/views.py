@@ -1,11 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 
-from .forms import UserLoginForm, UserRegisterForm
+from .forms import UserLoginForm, UserProfileForm, UserRegisterForm
+from .models import User
 from .utils import send_welcome_email
 
 
@@ -80,5 +82,28 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    """Профиль пользователя (дополнительно)"""
-    return render(request, "users/profile.html", {"users": request.user})
+    """Профиль пользователя"""
+    return render(request, "users/profile.html", {"user": request.user})
+
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    """Представление для редактирования профиля"""
+
+    model = User
+    form_class = UserProfileForm
+    template_name = "users/profile_edit.html"
+    success_url = reverse_lazy("profile")
+
+    def get_object(self, queryset=None):
+        """Возвращает текущего пользователя"""
+        return self.request.user
+
+    def form_valid(self, form):
+        """Обработка успешного сохранения профиля"""
+        messages.success(self.request, "✅ Профиль успешно обновлен!")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        """Обработка ошибок валидации"""
+        messages.error(self.request, "❌ Ошибка обновления профиля. Проверьте данные.")
+        return super().form_invalid(form)

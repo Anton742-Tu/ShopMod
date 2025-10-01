@@ -24,7 +24,17 @@
                     <span class="navbar-text me-3">👋 Привет, {{ user.email }}</span>
                     <a class="nav-link" href="{% url 'product_list' %}">📦 Все товары</a>
                     <a class="nav-link" href="{% url 'product_create' %}">➕ Добавить товар</a>
-                    <a class="nav-link" href="{% url 'logout' %}">🚪 Выйти</a>
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            👤 Профиль
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">👀 Мой профиль</a></li>
+                            <li><a class="dropdown-item" href="{% url 'profile_edit' %}">✏️ Редактировать</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">🚪 Выйти</a></li>
+                        </ul>
+                    </div>
                 {% else %}
                     <a class="nav-link" href="{% url 'product_list' %}">📦 Все товары</a>
                     <a class="nav-link" href="{% url 'login' %}">🔑 Войти</a>
