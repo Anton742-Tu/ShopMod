@@ -125,6 +125,10 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",  # папка со статическими файлами
 ]
 
+# Медиа файлы
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 # Для продакшена (позже)
 # STATIC_ROOT = BASE_DIR / 'staticfiles'
 
