@@ -1,0 +1,58 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Все товары - ShopMod{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>📦 Список товаров</h1>
+    <a href="{% url 'product_create' %}" class="btn btn-success">
+        ➕ Добавить товар
+    </a>
+</div>
+
+{% if products %}
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">
+                        {% if product.description %}
+                            {{ product.description|truncatewords:20 }}
+                        {% else %}
+                            <span class="text-muted">Описание отсутствует</span>
+                        {% endif %}
+                    </p>
+                    <small class="text-muted">
+                        Создан: {{ product.created_at|date:"d.m.Y H:i" }}
+                    </small>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-primary">
+                            ✏️ Редактировать
+                        </a>
+                        <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline-danger">
+                            🗑️ Удалить
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <div class="card">
+            <div class="card-body py-5">
+                <h3 class="text-muted">😴 Товаров пока нет</h3>
+                <p class="text-muted">Добавьте первый товар, чтобы начать работу</p>
+                <a href="{% url 'product_create' %}" class="btn btn-primary mt-3">
+                    ➕ Добавить первый товар
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

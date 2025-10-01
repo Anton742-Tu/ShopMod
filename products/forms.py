@@ -17,28 +17,29 @@ FORBIDDEN_WORDS = [
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description']  # Укажи все поля, которые нужно выводить в форме
-        # Можно добавить виджеты для красоты, но это опционально
+        fields = ['name', 'description']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
+        labels = {
+            'name': 'Название продукта',
+            'description': 'Описание продукта',
         }
 
     def clean(self):
         """
-        Метод для валидации всех данных формы.
-        Вызывается автоматически при вызове form.is_valid().
+        Валидация на запрещенные слова
         """
-        cleaned_data = super().clean() # Получаем базово очищенные данные
-        name = cleaned_data.get('name', '').lower() # Приводим к нижнему регистру
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name', '').lower()
         description = cleaned_data.get('description', '').lower()
 
         # Проверяем каждое запрещенное слово
         for word in FORBIDDEN_WORDS:
             if word in name or word in description:
-                # Используем более общее сообщение об ошибке
                 raise forms.ValidationError(
-                    f"Использование запрещенного слова '{word}' в названии или описании недопустимо."
+                    f"Ошибка: использование слова '{word}' запрещено в названии или описании товара."
                 )
 
-        # Если все ок, возвращаем очищенные данные
         return cleaned_data
