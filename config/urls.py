@@ -22,7 +22,8 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("products/", include("products.urls")),  # 👈 добавить эту строку
+    path("products/", include("products.urls")),
+    path("users/", include("users.urls")),
 ]
 
 # Добавляем обработку медиафайлов в режиме разработки

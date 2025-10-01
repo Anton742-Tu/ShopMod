@@ -133,6 +133,20 @@ STATICFILES_DIRS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Настройки email (для разработки)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Вывод в консоль
+EMAIL_HOST = "localhost"
+EMAIL_PORT = 25
+DEFAULT_FROM_EMAIL = "noreply@shopmod.ru"
+
+# Для продакшена раскомментируй:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.yandex.ru'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@yandex.ru'
+# EMAIL_HOST_PASSWORD = 'your-password'
+
 # Для продакшена (позже)
 # STATIC_ROOT = BASE_DIR / 'staticfiles'
 
