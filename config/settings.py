@@ -133,6 +133,11 @@ STATICFILES_DIRS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Настройки аутентификации
+LOGIN_URL = "/users/login/"
+LOGIN_REDIRECT_URL = "/products/"
+LOGOUT_REDIRECT_URL = "/products/"
+
 # Настройки email (для разработки)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Вывод в консоль
 EMAIL_HOST = "localhost"

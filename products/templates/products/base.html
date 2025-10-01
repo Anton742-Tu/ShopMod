@@ -22,10 +22,11 @@
             <div class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
                     <span class="navbar-text me-3">👋 Привет, {{ user.email }}</span>
-                    <a class="nav-link" href="{% url 'product_list' %}">Все товары</a>
-                    <a class="nav-link" href="{% url 'product_create' %}">Добавить товар</a>
+                    <a class="nav-link" href="{% url 'product_list' %}">📦 Все товары</a>
+                    <a class="nav-link" href="{% url 'product_create' %}">➕ Добавить товар</a>
                     <a class="nav-link" href="{% url 'logout' %}">🚪 Выйти</a>
                 {% else %}
+                    <a class="nav-link" href="{% url 'product_list' %}">📦 Все товары</a>
                     <a class="nav-link" href="{% url 'login' %}">🔑 Войти</a>
                     <a class="nav-link" href="{% url 'register' %}">📝 Регистрация</a>
                 {% endif %}
