@@ -1,6 +1,7 @@
 import os
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth.forms import (
     AuthenticationForm,
     UserChangeForm,
@@ -9,19 +10,6 @@ from django.contrib.auth.forms import (
 from django.core.exceptions import ValidationError
 
 from .models import User
-
-# Список запрещенных слов из задания (если нужно для пользователей)
-FORBIDDEN_WORDS = [
-    "казино",
-    "криптовалюта",
-    "крипта",
-    "биржа",
-    "дешево",
-    "бесплатно",
-    "обман",
-    "полиция",
-    "радар",
-]
 
 
 class UserRegisterForm(UserCreationForm):
@@ -160,3 +148,15 @@ class UserProfileForm(forms.ModelForm):
             )
 
         return avatar
+
+    def clean_username(self):
+        """Валидация имени пользователя на запрещенные слова"""
+        username = self.cleaned_data.get("username", "").lower()
+
+        for word in settings.FORBIDDEN_WORDS:
+            if word in username:
+                raise forms.ValidationError(
+                    f"❌ Использование слова '{word}' в имени пользователя запрещено."
+                )
+
+        return self.cleaned_data["username"]
