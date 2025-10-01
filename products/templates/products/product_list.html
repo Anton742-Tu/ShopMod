@@ -1,0 +1,73 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Все товары - ShopMod{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>📦 Список товаров</h1>
+    <a href="{% url 'product_create' %}" class="btn btn-success">
+        ➕ Добавить товар
+    </a>
+</div>
+
+{% if products %}
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <!-- 👇 Блок с изображением -->
+                {% if product.image %}
+                    <div class="ratio ratio-4x3">
+                        <img src="{{ product.image.url }}"
+                             class="img-fluid object-fit-contain"
+                             alt="{{ product.name }}">
+                    </div>
+                {% else %}
+                    <div class="ratio ratio-16x9 bg-light d-flex align-items-center justify-content-center">
+                        <span class="text-muted">🖼️ Нет изображения</span>
+                    </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text flex-grow-1">
+                        {% if product.description %}
+                            {{ product.description|truncatewords:20 }}
+                        {% else %}
+                            <span class="text-muted">Описание отсутствует</span>
+                        {% endif %}
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <small class="text-muted">
+                            Создан: {{ product.created_at|date:"d.m.Y H:i" }}
+                        </small>
+                        <span class="badge bg-primary fs-6">{{ product.price }} ₽</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="btn-group btn-group-sm w-100">
+                        <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-primary">
+                            ✏️ Редактировать
+                        </a>
+                        <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline-danger">
+                            🗑️ Удалить
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <div class="card">
+            <div class="card-body py-5">
+                <h3 class="text-muted">😴 Товаров пока нет</h3>
+                <p class="text-muted">Добавьте первый товар, чтобы начать работу</p>
+                <a href="{% url 'product_create' %}" class="btn btn-primary mt-3">
+                    ➕ Добавить первый товар
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

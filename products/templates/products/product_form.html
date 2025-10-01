@@ -1,0 +1,79 @@
+{% extends 'products/base.html' %}
+
+{% block title %}
+    {% if object %}Редактирование {{ object.name }}{% else %}Добавление товара{% endif %} - ShopMod
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header {% if object %}bg-warning{% else %}bg-success{% endif %} text-white">
+                <h4 class="card-title mb-0">
+                    {% if object %}
+                        ✏️ Редактирование "{{ object.name }}"
+                    {% else %}
+                        ➕ Добавление нового товара
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- 👇 ДОБАВЛЯЕМ enctype для загрузки файлов -->
+                <form method="post" novalidate enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <div>❌ {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                    <div class="mb-4">
+                        <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+                            {{ field.label }}
+                        </label>
+
+                        <!-- 👇 Особый вывод для поля изображения -->
+                        {% if field.name == 'image' and object.image %}
+                            <div class="mb-2">
+                                <img src="{{ object.image.url }}" alt="{{ object.name }}"
+                                     class="img-thumbnail" style="max-height: 200px;">
+                                <div class="form-text">Текущее изображение</div>
+                            </div>
+                        {% endif %}
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <div class="form-text text-muted">
+                                💡 {{ field.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if field.errors %}
+                            <div class="text-danger small mt-2">
+                                {% for error in field.errors %}
+                                    <div>⚠️ {{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn {% if object %}btn-warning{% else %}btn-success{% endif %} btn-lg">
+                            {% if object %}💾 Сохранить изменения{% else %}✅ Создать товар{% endif %}
+                        </button>
+                        <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-lg">
+                            ← Назад к списку
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
