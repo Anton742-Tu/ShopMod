@@ -24,9 +24,13 @@
                             <span class="text-muted">Описание отсутствует</span>
                         {% endif %}
                     </p>
-                    <small class="text-muted">
-                        Создан: {{ product.created_at|date:"d.m.Y H:i" }}
-                    </small>
+                    <!-- 👇 ДОБАВЛЯЕМ ЦЕНУ -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            Создан: {{ product.created_at|date:"d.m.Y H:i" }}
+                        </small>
+                        <span class="badge bg-primary fs-6">{{ product.price }} ₽</span>
+                    </div>
                 </div>
                 <div class="card-footer bg-transparent">
                     <div class="btn-group btn-group-sm">
