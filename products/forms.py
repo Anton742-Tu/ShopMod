@@ -1,21 +1,9 @@
 import os
 
 from django import forms
+from django.conf import settings
 
 from .models import Product
-
-# Список запрещенных слов из задания
-FORBIDDEN_WORDS = [
-    "казино",
-    "криптовалюта",
-    "крипта",
-    "биржа",
-    "дешево",
-    "бесплатно",
-    "обман",
-    "полиция",
-    "радар",
-]
 
 
 class ProductForm(forms.ModelForm):
@@ -136,8 +124,8 @@ class ProductForm(forms.ModelForm):
         name = cleaned_data.get("name", "").lower()
         description = cleaned_data.get("description", "").lower()
 
-        # Проверяем каждое запрещенное слово
-        for word in FORBIDDEN_WORDS:
+        # 👇 ИСПОЛЬЗУЕМ НАСТРОЙКИ ИЗ settings.py
+        for word in settings.FORBIDDEN_WORDS:
             if word in name or word in description:
                 raise forms.ValidationError(
                     f"🚫 Ошибка: использование слова '{word}' запрещено в названии или описании товара."

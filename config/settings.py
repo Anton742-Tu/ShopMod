@@ -32,6 +32,19 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = []
 
+# Запрещенные слова для валидации продуктов
+FORBIDDEN_WORDS = [
+    "казино",
+    "криптовалюта",
+    "крипта",
+    "биржа",
+    "дешево",
+    "бесплатно",
+    "обман",
+    "полиция",
+    "радар",
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,7 +54,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "products",  # 👈 Наше приложение
+    # 👇 Наши приложения
+    "products",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -106,6 +121,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Кастомная модель пользователя
+AUTH_USER_MODEL = "users.User"
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -128,6 +145,25 @@ STATICFILES_DIRS = [
 # Медиа файлы
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Настройки аутентификации
+LOGIN_URL = "/users/login/"
+LOGIN_REDIRECT_URL = "/products/"
+LOGOUT_REDIRECT_URL = "/products/"
+
+# Настройки email (для разработки)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Вывод в консоль
+EMAIL_HOST = "localhost"
+EMAIL_PORT = 25
+DEFAULT_FROM_EMAIL = "noreply@shopmod.ru"
+
+# Для продакшена раскомментируй:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.yandex.ru'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@yandex.ru'
+# EMAIL_HOST_PASSWORD = 'your-password'
 
 # Для продакшена (позже)
 # STATIC_ROOT = BASE_DIR / 'staticfiles'
