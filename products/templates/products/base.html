@@ -16,13 +16,14 @@
     <!-- Навигация -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'product_list' %}">
+            <a class="navbar-brand" href="{% url 'home' %}">
                 🛍️ ShopMod
             </a>
             <div class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
                     <span class="navbar-text me-3">👋 Привет, {{ user.email }}</span>
-                    <a class="nav-link" href="{% url 'product_list' %}">📦 Все товары</a>
+                    <a class="nav-link" href="{% url 'home' %}">🏠 Главная</a>
+                    <a class="nav-link" href="{% url 'product_list' %}">📦 Товары</a>
                     <a class="nav-link" href="{% url 'product_create' %}">➕ Добавить товар</a>
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -36,7 +37,8 @@
                         </ul>
                     </div>
                 {% else %}
-                    <a class="nav-link" href="{% url 'product_list' %}">📦 Все товары</a>
+                    <a class="nav-link" href="{% url 'home' %}">🏠 Главная</a>
+                    <a class="nav-link" href="{% url 'product_list' %}">📦 Товары</a>
                     <a class="nav-link" href="{% url 'login' %}">🔑 Войти</a>
                     <a class="nav-link" href="{% url 'register' %}">📝 Регистрация</a>
                 {% endif %}

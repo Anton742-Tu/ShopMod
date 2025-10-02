@@ -8,6 +8,19 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from .forms import ProductForm
 from .models import Product
 
+from django.views.generic import TemplateView
+
+
+class HomeView(TemplateView):
+    """Главная страница ShopMod"""
+    template_name = 'products/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Можно добавить дополнительные данные, например:
+        # context['featured_products'] = Product.objects.all()[:4]
+        return context
+
 
 class ProductListView(ListView):
     """Список товаров - доступен всем"""

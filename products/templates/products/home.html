@@ -1,0 +1,90 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Главная - ShopMod{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <!-- Герой-секция -->
+        <div class="text-center py-5 mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
+            <h1 class="display-4 fw-bold mb-4">🛍️ Добро пожаловать в ShopMod!</h1>
+            <p class="lead mb-4">Профессиональная система управления товарами</p>
+            <div class="d-flex gap-3 justify-content-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'product_list' %}" class="btn btn-light btn-lg">
+                        📦 Перейти к товарам
+                    </a>
+                    <a href="{% url 'product_create' %}" class="btn btn-outline-light btn-lg">
+                        ➕ Добавить товар
+                    </a>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg">
+                        📝 Начать работу
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">
+                        🔑 Войти в систему
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Особенности -->
+        <div class="row text-center mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 mb-3">📦</div>
+                        <h4>Управление товарами</h4>
+                        <p class="text-muted">Полный CRUD для ваших товаров с изображениями и описаниями</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 mb-3">👤</div>
+                        <h4>Система пользователей</h4>
+                        <p class="text-muted">Регистрация, авторизация и управление профилями</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 mb-3">🛡️</div>
+                        <h4>Безопасность</h4>
+                        <p class="text-muted">Защита от спама и неавторизованного доступа</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Быстрые действия -->
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">🚀 Быстрый старт</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Для новых пользователей:</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">📝 <a href="{% url 'register' %}" class="text-decoration-none">Зарегистрируйтесь</a> - создайте аккаунт</li>
+                            <li class="mb-2">🔑 <a href="{% url 'login' %}" class="text-decoration-none">Войдите</a> - в систему</li>
+                            <li class="mb-2">📦 <a href="{% url 'product_create' %}" class="text-decoration-none">Добавьте</a> - первый товар</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Для опытных пользователей:</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">👀 <a href="{% url 'product_list' %}" class="text-decoration-none">Просмотрите</a> - все товары</li>
+                            <li class="mb-2">✏️ <a href="{% url 'profile_edit' %}" class="text-decoration-none">Настройте</a> - свой профиль</li>
+                            <li class="mb-2">🖼️ <a href="{% url 'product_create' %}" class="text-decoration-none">Загрузите</a> - изображения товаров</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
