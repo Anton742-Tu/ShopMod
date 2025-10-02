@@ -1,5 +1,7 @@
 import os
 
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
@@ -22,11 +24,30 @@ class Product(models.Model):
         blank=True,
         null=True,
     )
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name="Опубликован",
+        help_text="Отображается ли товар в общем списке",
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
-
-    def __str__(self):
-        return self.name
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
     class Meta:
         verbose_name = "Продукт"
         verbose_name_plural = "Продукты"
+        permissions = [
+            ("can_unpublish_product", "Может отменять публикацию продукта"),
+        ]
+
+    def __str__(self):
+        return self.name
+
+    def unpublish(self):
+        """Метод для снятия с публикации"""
+        self.is_published = False
+        self.save()
+
+    def publish(self):
+        """Метод для публикации"""
+        self.is_published = True
+        self.save()

@@ -22,7 +22,17 @@
     <div class="row">
         {% for product in products %}
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow-sm position-relative">
+
+                <!-- Бейдж статуса публикации -->
+                <div class="position-absolute top-0 end-0 m-2">
+                    {% if product.is_published %}
+                        <span class="badge bg-success">📢 Опубликован</span>
+                    {% else %}
+                        <span class="badge bg-secondary">👁️ Скрыт</span>
+                    {% endif %}
+                </div>
+
                 {% if product.image %}
                     <div class="ratio ratio-4x3">
                         <img src="{{ product.image.url }}"
@@ -55,14 +65,40 @@
                 <!-- 👇 Кнопки управления показываем только авторизованным -->
                 {% if user.is_authenticated %}
                 <div class="card-footer bg-transparent">
+                    <!-- Кнопки редактирования и удаления -->
                     <div class="btn-group btn-group-sm w-100">
                         <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-primary">
                             ✏️ Редактировать
                         </a>
+
+                        <!-- Кнопка удаления (только для модераторов) -->
+                        {% if perms.products.delete_product or user.is_superuser %}
                         <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline-danger">
                             🗑️ Удалить
                         </a>
+                        {% endif %}
                     </div>
+
+                    <!-- Кнопки публикации/снятия с публикации -->
+                    {% if perms.products.can_unpublish_product or user.is_superuser %}
+                    <div class="btn-group btn-group-sm w-100 mt-2">
+                        {% if product.is_published %}
+                        <form method="post" action="{% url 'product_unpublish' product.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-warning w-100">
+                                👁️ Снять с публикации
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="{% url 'product_publish' product.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-success w-100">
+                                📢 Опубликовать
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="card-footer bg-light">
