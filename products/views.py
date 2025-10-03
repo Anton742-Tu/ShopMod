@@ -23,6 +23,17 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        from blog.models import BlogPost
+        from products.models import Product
+        from users.models import User
+
+        # Добавляем статистику для главной страницы
+        context["products_count"] = Product.objects.count()
+        context["users_count"] = User.objects.count()
+        context["blog_posts_count"] = BlogPost.objects.filter(
+            status="published"
+        ).count()
+
         return context
 
 

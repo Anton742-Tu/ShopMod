@@ -6,8 +6,7 @@ from django.urls import include, path
 from . import views
 
 urlpatterns = [
-    path("", views.HomeView.as_view(), name="home"),
-    path("products/", views.ProductListView.as_view(), name="product_list"),
+    path("", views.ProductListView.as_view(), name="product_list"),
     path("products/create/", views.ProductCreateView.as_view(), name="product_create"),
     path(
         "products/<int:pk>/update/",

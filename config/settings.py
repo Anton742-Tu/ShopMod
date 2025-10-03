@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     # 👇 Наши приложения
     "products",
     "users",
+    "blog",
 ]
 
 MIDDLEWARE = [

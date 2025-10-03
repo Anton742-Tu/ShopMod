@@ -1,0 +1,52 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Удаление статьи "{{ object.title }}" - Блог ShopMod{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h4 class="card-title mb-0">🗑️ Подтверждение удаления</h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <h5>Вы уверены, что хотите удалить статью?</h5>
+                    <div class="card mt-3">
+                        <div class="card-body text-start">
+                            <strong>{{ object.title }}</strong>
+                            <div class="mt-2">
+                                <span class="badge bg-secondary">Автор: {{ object.author.email }}</span>
+                                <span class="badge {% if object.status == 'published' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ object.get_status_display }}
+                                </span>
+                            </div>
+                            <p class="mt-2 mb-0 text-muted">
+                                {{ object.content|truncatewords:20 }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Предупреждение -->
+                    <div class="alert alert-warning mt-3">
+                        <h6>⚠️ Внимание!</h6>
+                        <p class="mb-0">Статья будет удалена безвозвратно. Это действие нельзя отменить.</p>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            ✅ Да, удалить статью
+                        </button>
+                        <a href="{% url 'blog_post_detail' object.pk %}" class="btn btn-outline-secondary btn-lg">
+                            ❌ Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
