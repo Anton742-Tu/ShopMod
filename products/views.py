@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -58,38 +59,58 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         """Автоматически привязываем товар к текущему пользователю"""
+        form.instance.owner = self.request.user  # 👈 АВТОМАТИЧЕСКАЯ ПРИВЯЗКА
+        messages.success(self.request, "✅ Товар успешно создан!")
         return super().form_valid(form)
 
 
-class ProductUpdateView(LoginRequiredMixin, UpdateView):
-    """Редактирование товара - только для авторизованных"""
+class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Редактирование товара - только для владельца"""
 
     model = Product
     form_class = ProductForm
     template_name = "products/product_form.html"
     success_url = reverse_lazy("product_list")
 
+    def test_func(self):
+        """Проверка что пользователь - владелец товара"""
+        product = self.get_object()
+        user = self.request.user
+        return product.owner == user  # 👈 ТОЛЬКО ВЛАДЕЛЕЦ
+
+    def handle_no_permission(self):
+        """Обработка отсутствия прав"""
+        messages.error(self.request, "❌ Вы можете редактировать только свои товары.")
+        return redirect("product_list")
+
 
 class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """Удаление товара - только для авторизованных с правами"""
+    """Удаление товара - только для владельца или модератора"""
 
     model = Product
     template_name = "products/product_confirm_delete.html"
     success_url = reverse_lazy("product_list")
 
     def test_func(self):
-        """Проверка прав на удаление"""
+        """Проверка прав на удаление - владелец ИЛИ модератор"""
+        product = self.get_object()
         user = self.request.user
-        return user.has_perm("products.delete_product") or user.is_superuser
+
+        # 👇 ВЛАДЕЛЕЦ ИЛИ МОДЕРАТОР ИЛИ СУПЕРПОЛЬЗОВАТЕЛЬ
+        return (
+            product.owner == user
+            or user.has_perm("products.delete_product")
+            or user.is_superuser
+        )
 
     def handle_no_permission(self):
         """Обработка отсутствия прав"""
-        messages.error(self.request, "❌ У вас нет прав для удаления товаров.")
+        messages.error(self.request, "❌ У вас нет прав для удаления этого товара.")
         return redirect("product_list")
 
 
 class ProductUnpublishView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """Снятие товара с публикации"""
+    """Снятие товара с публикации - для модераторов"""
 
     def test_func(self):
         """Проверка прав на снятие с публикации"""
@@ -103,19 +124,12 @@ class ProductUnpublishView(LoginRequiredMixin, UserPassesTestMixin, View):
         messages.success(request, f'✅ Товар "{product.name}" снят с публикации.')
         return redirect("product_list")
 
-    def handle_no_permission(self):
-        """Обработка отсутствия прав"""
-        messages.error(
-            self.request, "❌ У вас нет прав для снятия товаров с публикации."
-        )
-        return redirect("product_list")
-
 
 class ProductPublishView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """Публикация товара"""
+    """Публикация товара - для модераторов"""
 
     def test_func(self):
-        """Проверка прав на публикацию (тоже нужно право на снятие)"""
+        """Проверка прав на публикацию"""
         user = self.request.user
         return user.has_perm("products.can_unpublish_product") or user.is_superuser
 
@@ -124,9 +138,4 @@ class ProductPublishView(LoginRequiredMixin, UserPassesTestMixin, View):
         product.publish()
 
         messages.success(request, f'✅ Товар "{product.name}" опубликован.')
-        return redirect("product_list")
-
-    def handle_no_permission(self):
-        """Обработка отсутствия прав"""
-        messages.error(self.request, "❌ У вас нет прав для публикации товаров.")
         return redirect("product_list")

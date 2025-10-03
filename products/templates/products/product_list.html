@@ -65,21 +65,30 @@
                 <!-- 👇 Кнопки управления показываем только авторизованным -->
                 {% if user.is_authenticated %}
                 <div class="card-footer bg-transparent">
-                    <!-- Кнопки редактирования и удаления -->
+                    <!-- Кнопки редактирования и удаления (только для владельца) -->
+                    {% if product.owner == user or perms.products.delete_product or user.is_superuser %}
                     <div class="btn-group btn-group-sm w-100">
+                        <!-- Кнопка редактирования (только для владельца) -->
+                        {% if product.owner == user %}
                         <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-primary">
                             ✏️ Редактировать
                         </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary" disabled title="Можно редактировать только свои товары">
+                            ✏️ Редактировать
+                        </button>
+                        {% endif %}
 
-                        <!-- Кнопка удаления (только для модераторов) -->
-                        {% if perms.products.delete_product or user.is_superuser %}
+                        <!-- Кнопка удаления (для владельца или модератора) -->
+                        {% if product.owner == user or perms.products.delete_product or user.is_superuser %}
                         <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline-danger">
                             🗑️ Удалить
                         </a>
                         {% endif %}
                     </div>
+                    {% endif %}
 
-                    <!-- Кнопки публикации/снятия с публикации -->
+                    <!-- Кнопки публикации/снятия с публикации (только для модераторов) -->
                     {% if perms.products.can_unpublish_product or user.is_superuser %}
                     <div class="btn-group btn-group-sm w-100 mt-2">
                         {% if product.is_published %}
@@ -99,6 +108,16 @@
                         {% endif %}
                     </div>
                     {% endif %}
+
+                    <!-- Информация о владельце -->
+                    <div class="mt-2 text-center">
+                        <small class="text-muted">
+                            Владелец: {{ product.owner.email }}
+                            {% if product.owner == user %}
+                            <span class="badge bg-info">Ваш товар</span>
+                            {% endif %}
+                        </small>
+                    </div>
                 </div>
                 {% else %}
                 <div class="card-footer bg-light">
