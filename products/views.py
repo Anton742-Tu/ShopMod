@@ -3,7 +3,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.cache import cache_page
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -12,6 +14,11 @@ from django.views.generic import (
     UpdateView,
 )
 
+from .cache_utils import (
+    cache_product_list,
+    get_cached_product_list,
+    invalidate_product_cache,
+)
 from .forms import ProductForm
 from .models import Product
 
@@ -38,15 +45,26 @@ class HomeView(TemplateView):
 
 
 class ProductListView(ListView):
-    """Список товаров - доступен всем"""
+    """Список товаров с кешированием"""
 
     model = Product
     template_name = "products/product_list.html"
     context_object_name = "products"
     paginate_by = 12
 
+    #@method_decorator(cache_page(60 * 15))  # Кешируем на 15 минут
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
     def get_queryset(self):
         """Для обычных пользователей показываем только опубликованные товары"""
+        # Пробуем получить из кеша
+        cached_products = get_cached_product_list()
+        if cached_products and not self.request.user.has_perm(
+            "products.can_unpublish_product"
+        ):
+            return cached_products
+
         queryset = super().get_queryset()
 
         if self.request.user.is_authenticated and (
@@ -54,10 +72,16 @@ class ProductListView(ListView):
             or self.request.user.is_superuser
         ):
             # Модераторы и админы видят все товары
-            return queryset
+            result = queryset
         else:
             # Обычные пользователи видят только опубликованные
-            return queryset.filter(is_published=True)
+            result = queryset.filter(is_published=True)
+
+        # Кешируем результат для обычных пользователей
+        if not self.request.user.has_perm("products.can_unpublish_product"):
+            cache_product_list(result)
+
+        return result
 
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
@@ -69,10 +93,10 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("product_list")
 
     def form_valid(self, form):
-        """Автоматически привязываем товар к текущему пользователю"""
-        form.instance.owner = self.request.user  # 👈 АВТОМАТИЧЕСКАЯ ПРИВЯЗКА
-        messages.success(self.request, "✅ Товар успешно создан!")
-        return super().form_valid(form)
+        """После создания товара инвалидируем кеш"""
+        response = super().form_valid(form)
+        invalidate_product_cache()  # 👈 ИНВАЛИДИРУЕМ КЕШ
+        return response
 
 
 class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -93,6 +117,12 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         """Обработка отсутствия прав"""
         messages.error(self.request, "❌ Вы можете редактировать только свои товары.")
         return redirect("product_list")
+
+    def form_valid(self, form):
+        """После обновления товара инвалидируем кеш"""
+        response = super().form_valid(form)
+        invalidate_product_cache()  # 👈 ИНВАЛИДИРУЕМ КЕШ
+        return response
 
 
 class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -118,6 +148,12 @@ class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         """Обработка отсутствия прав"""
         messages.error(self.request, "❌ У вас нет прав для удаления этого товара.")
         return redirect("product_list")
+
+    def form_valid(self, form):
+        """После удаления товара инвалидируем кеш"""
+        response = super().form_valid(form)
+        invalidate_product_cache()  # 👈 ИНВАЛИДИРУЕМ КЕШ
+        return response
 
 
 class ProductUnpublishView(LoginRequiredMixin, UserPassesTestMixin, View):

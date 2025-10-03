@@ -66,7 +66,7 @@
 
 ### 1. Клонирование и настройка
 ```bash
-git clone <repository-url>
+git clone <git@github.com:Anton742-Tu/ShopMod.git>
 cd shopmod
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
