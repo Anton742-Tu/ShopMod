@@ -20,8 +20,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from products.views import HomeView
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", HomeView.as_view(), name="home"),
+    path("", include("products.urls")),
+    path("blog/", include("blog.urls")),
     path("products/", include("products.urls")),
     path("users/", include("users.urls")),
 ]

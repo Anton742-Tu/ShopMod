@@ -1,0 +1,114 @@
+{% extends 'products/base.html' %}
+
+{% block title %}{{ post.title }} - Блог ShopMod{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            {% if post.image %}
+                <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}"
+                     style="max-height: 400px; object-fit: cover;">
+            {% endif %}
+
+            <div class="card-body">
+                <!-- Заголовок и мета-информация -->
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <h1 class="card-title">{{ post.title }}</h1>
+                        <div class="text-muted">
+                            <span>✍️ {{ post.author.email }}</span> •
+                            <span>📅 {{ post.published_at|date:"d.m.Y H:i" }}</span>
+                            <span class="badge {% if post.status == 'published' %}bg-success{% else %}bg-warning{% endif %} ms-2">
+                                {{ post.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки управления -->
+                    {% if perms.blog.can_manage_blog or user.is_superuser or post.author == user %}
+                    <div class="btn-group">
+                        {% if post.author == user or perms.blog.can_manage_blog or user.is_superuser %}
+                        <a href="{% url 'blog_post_update' post.pk %}" class="btn btn-outline-warning">
+                            ✏️ Редактировать
+                        </a>
+                        {% endif %}
+
+                        {% if perms.blog.can_manage_blog or user.is_superuser %}
+                        <a href="{% url 'blog_post_delete' post.pk %}" class="btn btn-outline-danger">
+                            🗑️ Удалить
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Содержание статьи -->
+                <div class="blog-content">
+                    {{ post.content|linebreaks }}
+                </div>
+
+                <!-- Дополнительная информация -->
+                <div class="mt-5 pt-4 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>📊 Статистика статьи</h6>
+                            <ul class="list-unstyled">
+                                <li>📝 Создана: {{ post.created_at|date:"d.m.Y H:i" }}</li>
+                                <li>🔄 Обновлена: {{ post.updated_at|date:"d.m.Y H:i" }}</li>
+                                {% if post.published_at %}
+                                    <li>📢 Опубликована: {{ post.published_at|date:"d.m.Y H:i" }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        {% if perms.blog.can_publish_blog or user.is_superuser %}
+                        <div class="col-md-6">
+                            <h6>⚙️ Управление публикацией</h6>
+                            <div class="btn-group w-100">
+                                {% if post.status == 'draft' %}
+                                <form method="post" action="{% url 'blog_post_publish' post.pk %}" class="w-100">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success w-100">
+                                        📢 Опубликовать статью
+                                    </button>
+                                </form>
+                                {% else %}
+                                <form method="post" action="{% url 'blog_post_unpublish' post.pk %}" class="w-100">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-warning w-100">
+                                        👁️ Снять с публикации
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'blog_post_list' %}" class="btn btn-outline-primary">
+                        ← Назад к списку статей
+                    </a>
+
+                    {% if user.is_authenticated %}
+                    <div class="btn-group">
+                        {% if perms.blog.can_manage_blog or user.is_superuser %}
+                        <a href="{% url 'blog_post_create' %}" class="btn btn-success">
+                            ✍️ Новая статья
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            🏠 На главную
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

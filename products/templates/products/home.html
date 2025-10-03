@@ -1,0 +1,95 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Главная - ShopMod{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <!-- Герой-секция -->
+        <div class="text-center py-5 mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
+            <h1 class="display-4 fw-bold mb-4">🛍️ Добро пожаловать в ShopMod!</h1>
+            <p class="lead mb-4">Профессиональная система управления товарами и блогом</p>
+            <div class="d-flex gap-3 justify-content-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'product_list' %}" class="btn btn-light btn-lg">
+                        📦 Перейти к товарам
+                    </a>
+                    <a href="{% url 'blog_post_list' %}" class="btn btn-outline-light btn-lg">
+                        📝 Читать блог
+                    </a>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg">
+                        📝 Начать работу
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">
+                        🔑 Войти в систему
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Особенности -->
+        <div class="row text-center mb-5">
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 mb-3">📦</div>
+                        <h5>Управление товарами</h5>
+                        <p class="text-muted">Полный CRUD для ваших товаров с изображениями</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 mb-3">👤</div>
+                        <h5>Система пользователей</h5>
+                        <p class="text-muted">Регистрация, авторизация и управление профилями</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 mb-3">📝</div>
+                        <h5>Блог платформа</h5>
+                        <p class="text-muted">Публикация статей с системой модерации</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 mb-3">🛡️</div>
+                        <h5>Безопасность</h5>
+                        <p class="text-muted">Разграничение прав и защита данных</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="card shadow mb-5">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">📊 ShopMod в цифрах</h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3 class="text-primary">{{ products_count|default:"0" }}</h3>
+                        <p class="text-muted">Товаров в системе</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-success">{{ users_count|default:"0" }}</h3>
+                        <p class="text-muted">Зарегистрированных пользователей</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-warning">{{ blog_posts_count|default:"0" }}</h3>
+                        <p class="text-muted">Статей в блоге</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
