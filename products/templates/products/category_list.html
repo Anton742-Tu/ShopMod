@@ -1,0 +1,42 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Категории товаров - ShopMod{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">📁 Категории товаров</h1>
+    </div>
+</div>
+
+<div class="row">
+    {% for category in categories %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ category.name }}</h5>
+                <p class="card-text text-muted">
+                    {% if category.description %}
+                        {{ category.description|truncatewords:20 }}
+                    {% else %}
+                        Описание отсутствует
+                    {% endif %}
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary">{{ category.products_count }} товаров</span>
+                    <a href="{{ category.get_absolute_url }}" class="btn btn-outline-primary btn-sm">
+                        Смотреть товары →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            📝 Категории пока не добавлены
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

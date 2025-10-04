@@ -4,6 +4,24 @@ from django.conf import settings
 from django.db import models
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Название категории")
+    slug = models.SlugField(max_length=100, unique=True, verbose_name="URL-имя")
+    description = models.TextField(blank=True, verbose_name="Описание категории")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("products_by_category", kwargs={"category_slug": self.slug})
+
+
 def product_image_path(instance, filename):
     """Генерирует путь для сохранения изображений товаров"""
     ext = filename.split(".")[-1]
@@ -33,6 +51,14 @@ class Product(models.Model):
         default=True,
         verbose_name="Опубликован",
         help_text="Отображается ли товар в общем списке",
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Категория",
+        related_name="products",
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")

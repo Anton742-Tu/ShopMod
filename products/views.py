@@ -16,7 +16,8 @@ from django.views.generic import (
 )
 
 from .forms import ProductForm
-from .models import Product
+from .models import Category, Product
+from .services import get_all_categories, get_products_by_category
 
 
 class HomeView(TemplateView):
@@ -173,3 +174,33 @@ class ProductPublishView(LoginRequiredMixin, UserPassesTestMixin, View):
 
         messages.success(request, f'✅ Товар "{product.name}" опубликован.')
         return redirect("product_list")
+
+
+class ProductsByCategoryView(ListView):
+    """Список товаров по категории"""
+
+    template_name = "products/products_by_category.html"
+    context_object_name = "products"
+    paginate_by = 12
+
+    def get_queryset(self):
+        category_slug = self.kwargs["category_slug"]
+        return get_products_by_category(category_slug, self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_slug = self.kwargs["category_slug"]
+        context["category"] = get_object_or_404(Category, slug=category_slug)
+        context["all_categories"] = get_all_categories()
+        return context
+
+
+class CategoryListView(ListView):
+    """Список всех категорий"""
+
+    model = Category
+    template_name = "products/category_list.html"
+    context_object_name = "categories"
+
+    def get_queryset(self):
+        return get_all_categories()

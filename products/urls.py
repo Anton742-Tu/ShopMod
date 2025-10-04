@@ -31,4 +31,10 @@ urlpatterns = [
         views.ProductPublishView.as_view(),
         name="product_publish",
     ),
+    path("categories/", views.CategoryListView.as_view(), name="category_list"),
+    path(
+        "category/<slug:category_slug>/",
+        views.ProductsByCategoryView.as_view(),
+        name="products_by_category",
+    ),
 ]

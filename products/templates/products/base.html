@@ -30,6 +30,7 @@
                         <span class="navbar-text me-3">👋 Привет, {{ user.email }}</span>
                         <a class="nav-link" href="{% url 'home' %}">🏠 Главная</a>
                         <a class="nav-link" href="{% url 'product_list' %}">📦 Товары</a>
+                        <a class="nav-link" href="{% url 'category_list' %}">📂 Категории</a>
                         <a class="nav-link" href="{% url 'blog_post_list' %}">📝 Блог</a>
                         <a class="nav-link" href="{% url 'product_create' %}">➕ Добавить</a>
                         <div class="nav-item dropdown">
@@ -46,6 +47,7 @@
                     {% else %}
                         <a class="nav-link" href="{% url 'home' %}">🏠 Главная</a>
                         <a class="nav-link" href="{% url 'product_list' %}">📦 Товары</a>
+                        <a class="nav-link" href="{% url 'category_list' %}">📂 Категории</a>
                         <a class="nav-link" href="{% url 'blog_post_list' %}">📝 Блог</a>
                         <a class="nav-link" href="{% url 'login' %}">🔑 Войти</a>
                         <a class="nav-link" href="{% url 'register' %}">📝 Регистрация</a>
