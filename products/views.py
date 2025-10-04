@@ -17,7 +17,13 @@ from django.views.generic import (
 
 from .forms import ProductForm
 from .models import Category, Product
-from .services import get_all_categories, get_products_by_category
+from .services import (
+    get_all_categories,
+    get_cached_product_list,
+    get_products_by_category,
+    get_products_count,
+    invalidate_product_list_cache,
+)
 
 
 class HomeView(TemplateView):
@@ -42,7 +48,7 @@ class HomeView(TemplateView):
 
 
 class ProductListView(ListView):
-    """Список товаров с кешированием"""
+    """Список товаров с низкоуровневым кешированием"""
 
     model = Product
     template_name = "products/product_list.html"
@@ -54,16 +60,15 @@ class ProductListView(ListView):
         return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
-        """Убираем кастомное кеширование - используем cache_page"""
-        queryset = super().get_queryset()
+        """Используем низкоуровневое кеширование"""
+        return get_cached_product_list(self.request.user)
 
-        if self.request.user.is_authenticated and (
-            self.request.user.has_perm("products.can_unpublish_product")
-            or self.request.user.is_superuser
-        ):
-            return queryset
-        else:
-            return queryset.filter(is_published=True)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["products_count"] = get_products_count()
+        context["cache_type"] = "low_level"
+        context["cache_time"] = "2 минуты"
+        return context
 
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
@@ -76,6 +81,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
+        invalidate_product_list_cache()
         response = super().form_valid(form)
         return response
 
@@ -123,9 +129,7 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        invalidate_product_detail_cache(
-            self.object.id
-        )  # ИНВАЛИДИРУЕМ КЕШ ДЕТАЛЬНОЙ СТРАНИЦЫ
+        invalidate_product_list_cache()
         return response
 
 
@@ -144,9 +148,8 @@ class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         )
 
     def form_valid(self, form):
-        """Должен быть ПУСТОЙ или только super()"""
         response = super().form_valid(form)
-
+        invalidate_product_list_cache()
         return response
 
 
@@ -158,7 +161,7 @@ class ProductUnpublishView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
         product.unpublish()
-
+        invalidate_product_list_cache()
         messages.success(request, f'✅ Товар "{product.name}" снят с публикации.')
         return redirect("product_list")
 
@@ -171,7 +174,7 @@ class ProductPublishView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
         product.publish()
-
+        invalidate_product_list_cache()
         messages.success(request, f'✅ Товар "{product.name}" опубликован.')
         return redirect("product_list")
 
@@ -204,3 +207,61 @@ class CategoryListView(ListView):
 
     def get_queryset(self):
         return get_all_categories()
+
+
+# products/views.py
+from django.http import JsonResponse
+
+
+def cache_debug_view(request):
+    """Отладочная страница для проверки кеша"""
+    cache_key = (
+        f'product_list_{request.user.pk if request.user.is_authenticated else "anon"}'
+    )
+
+    data = {
+        "cache_key": cache_key,
+        "cache_exists": cache.get(cache_key) is not None,
+        "user": request.user.email if request.user.is_authenticated else "Anonymous",
+        "redis_keys": [],
+    }
+
+    # Проверяем Redis ключи
+    try:
+        import redis
+
+        r = redis.Redis(host="localhost", port=6379, db=0)
+        keys = [key.decode("utf-8") for key in r.keys("*")]
+        data["redis_keys"] = keys
+    except Exception as e:
+        data["redis_error"] = str(e)
+
+    return JsonResponse(data)
+
+
+from django.http import JsonResponse
+
+from .services import debug_cache_keys
+
+
+def cache_info_view(request):
+    """Страница информации о кеше"""
+    cache_keys = debug_cache_keys()
+
+    # Проверяем наш кеш
+    cache_key = (
+        f'product_list_{request.user.pk if request.user.is_authenticated else "anon"}'
+    )
+    cache_exists = cache.get(cache_key) is not None
+
+    return JsonResponse(
+        {
+            "user": (
+                request.user.email if request.user.is_authenticated else "Anonymous"
+            ),
+            "cache_key": cache_key,
+            "cache_exists": cache_exists,
+            "all_cache_keys": cache_keys,
+            "total_keys": len(cache_keys),
+        }
+    )

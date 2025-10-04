@@ -37,4 +37,6 @@ urlpatterns = [
         views.ProductsByCategoryView.as_view(),
         name="products_by_category",
     ),
+    path("cache-debug/", views.cache_debug_view, name="cache_debug"),
+    path("cache-info/", views.cache_info_view, name="cache_info"),
 ]

@@ -1,7 +1,30 @@
 import os
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import models
+
+
+class ProductManager(models.Manager):
+    def cached_all(self, user):
+        """Менеджер с кешированием"""
+        cache_key = (
+            f'product_manager_all_{user.pk if user.is_authenticated else "anon"}'
+        )
+        cached_products = cache.get(cache_key)
+
+        if cached_products is not None:
+            return cached_products
+
+        if user.is_authenticated and (
+            user.has_perm("products.can_unpublish_product") or user.is_superuser
+        ):
+            products = self.all()
+        else:
+            products = self.filter(is_published=True)
+
+        cache.set(cache_key, products, 60 * 10)
+        return products
 
 
 class Category(models.Model):
@@ -35,6 +58,7 @@ class Product(models.Model):
     price = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Цена", default=0.00
     )
+    objects = ProductManager()
     image = models.ImageField(
         upload_to=product_image_path,
         verbose_name="Изображение товара",
