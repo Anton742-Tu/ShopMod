@@ -1,12 +1,14 @@
 import os
+
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
-from django.test import RequestFactory
-from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.auth.middleware import AuthenticationMiddleware
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.test import RequestFactory
+
 from products.views import HomeView
 
 
@@ -15,7 +17,7 @@ def test_auth():
 
     # Создаем тестовый запрос
     factory = RequestFactory()
-    request = factory.get('/')
+    request = factory.get("/")
 
     # Добавляем middleware
     session_middleware = SessionMiddleware(lambda x: None)
@@ -35,7 +37,9 @@ def test_auth():
     context = view.get_context_data()
 
     print(f"Context user: {context.get('user')}")
-    print(f"Context authenticated: {context.get('user').is_authenticated if context.get('user') else 'No user'}")
+    print(
+        f"Context authenticated: {context.get('user').is_authenticated if context.get('user') else 'No user'}"
+    )
 
 
 if __name__ == "__main__":

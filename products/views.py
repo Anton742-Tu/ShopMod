@@ -9,16 +9,12 @@ from django.views.decorators.cache import cache_page
 from django.views.generic import (
     CreateView,
     DeleteView,
+    DetailView,
     ListView,
     TemplateView,
     UpdateView,
 )
 
-from .cache_utils import (
-    cache_product_list,
-    get_cached_product_list,
-    invalidate_product_cache,
-)
 from .forms import ProductForm
 from .models import Product
 
@@ -52,36 +48,21 @@ class ProductListView(ListView):
     context_object_name = "products"
     paginate_by = 12
 
-    #@method_decorator(cache_page(60 * 15))  # Кешируем на 15 минут
+    @method_decorator(cache_page(30))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
-        """Для обычных пользователей показываем только опубликованные товары"""
-        # Пробуем получить из кеша
-        cached_products = get_cached_product_list()
-        if cached_products and not self.request.user.has_perm(
-            "products.can_unpublish_product"
-        ):
-            return cached_products
-
+        """Убираем кастомное кеширование - используем cache_page"""
         queryset = super().get_queryset()
 
         if self.request.user.is_authenticated and (
             self.request.user.has_perm("products.can_unpublish_product")
             or self.request.user.is_superuser
         ):
-            # Модераторы и админы видят все товары
-            result = queryset
+            return queryset
         else:
-            # Обычные пользователи видят только опубликованные
-            result = queryset.filter(is_published=True)
-
-        # Кешируем результат для обычных пользователей
-        if not self.request.user.has_perm("products.can_unpublish_product"):
-            cache_product_list(result)
-
-        return result
+            return queryset.filter(is_published=True)
 
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
@@ -93,10 +74,31 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("product_list")
 
     def form_valid(self, form):
-        """После создания товара инвалидируем кеш"""
+        form.instance.owner = self.request.user
         response = super().form_valid(form)
-        invalidate_product_cache()  # 👈 ИНВАЛИДИРУЕМ КЕШ
         return response
+
+
+class ProductDetailView(DetailView):
+    """Детальная страница товара с кешированием"""
+
+    model = Product
+    template_name = "products/product_detail.html"
+    context_object_name = "product"
+
+    @method_decorator(cache_page(30))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.user.is_authenticated and (
+            self.request.user.has_perm("products.can_unpublish_product")
+            or self.request.user.is_superuser
+        ):
+            return queryset
+        else:
+            return queryset.filter(is_published=True)
 
 
 class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -111,7 +113,7 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         """Проверка что пользователь - владелец товара"""
         product = self.get_object()
         user = self.request.user
-        return product.owner == user  # 👈 ТОЛЬКО ВЛАДЕЛЕЦ
+        return product.owner == user  # ТОЛЬКО ВЛАДЕЛЕЦ
 
     def handle_no_permission(self):
         """Обработка отсутствия прав"""
@@ -119,48 +121,36 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return redirect("product_list")
 
     def form_valid(self, form):
-        """После обновления товара инвалидируем кеш"""
         response = super().form_valid(form)
-        invalidate_product_cache()  # 👈 ИНВАЛИДИРУЕМ КЕШ
+        invalidate_product_detail_cache(
+            self.object.id
+        )  # ИНВАЛИДИРУЕМ КЕШ ДЕТАЛЬНОЙ СТРАНИЦЫ
         return response
 
 
 class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """Удаление товара - только для владельца или модератора"""
-
     model = Product
     template_name = "products/product_confirm_delete.html"
     success_url = reverse_lazy("product_list")
 
     def test_func(self):
-        """Проверка прав на удаление - владелец ИЛИ модератор"""
         product = self.get_object()
         user = self.request.user
-
-        # 👇 ВЛАДЕЛЕЦ ИЛИ МОДЕРАТОР ИЛИ СУПЕРПОЛЬЗОВАТЕЛЬ
         return (
             product.owner == user
             or user.has_perm("products.delete_product")
             or user.is_superuser
         )
 
-    def handle_no_permission(self):
-        """Обработка отсутствия прав"""
-        messages.error(self.request, "❌ У вас нет прав для удаления этого товара.")
-        return redirect("product_list")
-
     def form_valid(self, form):
-        """После удаления товара инвалидируем кеш"""
+        """Должен быть ПУСТОЙ или только super()"""
         response = super().form_valid(form)
-        invalidate_product_cache()  # 👈 ИНВАЛИДИРУЕМ КЕШ
+
         return response
 
 
 class ProductUnpublishView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """Снятие товара с публикации - для модераторов"""
-
     def test_func(self):
-        """Проверка прав на снятие с публикации"""
         user = self.request.user
         return user.has_perm("products.can_unpublish_product") or user.is_superuser
 
@@ -173,10 +163,7 @@ class ProductUnpublishView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 class ProductPublishView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """Публикация товара - для модераторов"""
-
     def test_func(self):
-        """Проверка прав на публикацию"""
         user = self.request.user
         return user.has_perm("products.can_unpublish_product") or user.is_superuser
 

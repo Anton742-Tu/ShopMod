@@ -31,7 +31,7 @@ class BlogPostListView(ListView):
     context_object_name = "posts"
     paginate_by = 6
 
-    #@method_decorator(cache_page(60 * 30))  # Кешируем на 30 минут
+    # @method_decorator(cache_page(60 * 30))  # Кешируем на 30 минут
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
