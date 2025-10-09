@@ -1,7 +1,48 @@
 import os
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import models
+
+
+class ProductManager(models.Manager):
+    def cached_all(self, user):
+        """Менеджер с кешированием"""
+        cache_key = (
+            f'product_manager_all_{user.pk if user.is_authenticated else "anon"}'
+        )
+        cached_products = cache.get(cache_key)
+
+        if cached_products is not None:
+            return cached_products
+
+        if user.is_authenticated and (
+            user.has_perm("products.can_unpublish_product") or user.is_superuser
+        ):
+            products = self.all()
+        else:
+            products = self.filter(is_published=True)
+
+        cache.set(cache_key, products, 60 * 10)
+        return products
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Название категории")
+    slug = models.SlugField(max_length=100, unique=True, verbose_name="URL-имя")
+    description = models.TextField(blank=True, verbose_name="Описание категории")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("products_by_category", kwargs={"category_slug": self.slug})
 
 
 def product_image_path(instance, filename):
@@ -17,6 +58,7 @@ class Product(models.Model):
     price = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Цена", default=0.00
     )
+    objects = ProductManager()
     image = models.ImageField(
         upload_to=product_image_path,
         verbose_name="Изображение товара",
@@ -33,6 +75,14 @@ class Product(models.Model):
         default=True,
         verbose_name="Опубликован",
         help_text="Отображается ли товар в общем списке",
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Категория",
+        related_name="products",
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")

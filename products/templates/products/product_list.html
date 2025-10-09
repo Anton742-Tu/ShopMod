@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>📦 Список товаров</h1>
 
-    <!-- 👇 Показываем кнопку "Добавить товар" только авторизованным -->
+    <!-- Показываем кнопку "Добавить товар" только авторизованным -->
     {% if user.is_authenticated %}
         <a href="{% url 'product_create' %}" class="btn btn-success">
             ➕ Добавить товар
@@ -16,6 +16,16 @@
             <small>🔐 Войдите в систему, чтобы добавлять товары</small>
         </div>
     {% endif %}
+</div>
+
+<!-- Индикатор низкоуровневого кеширования -->
+<div class="alert alert-success mb-4">
+    <small>
+        ⚡ <strong>Низкоуровневое кеширование</strong> |
+        Время: {{ cache_time }} |
+        Товаров: {{ products_count }} |
+        Загружено: {% now "H:i:s" %}
+    </small>
 </div>
 
 {% if products %}
@@ -43,7 +53,7 @@
                 <div class="ratio ratio-4x3 bg-light d-flex align-items-center justify-content-center position-relative">
                     <span class="text-muted">🖼️ Нет изображения</span>
 
-                    <!-- 👇 И ДЛЯ ЗАГЛУШКИ ТОЖЕ ДОБАВИМ БЕЙДЖ -->
+                    <!-- И ДЛЯ ЗАГЛУШКИ ТОЖЕ ДОБАВИМ БЕЙДЖ -->
                     <div class="position-absolute top-0 end-0 m-2">
                         {% if product.is_published %}
                             <span class="badge bg-success">📢 Опубликован</span>
@@ -70,7 +80,7 @@
                     </div>
                 </div>
 
-                <!-- 👇 Кнопки управления показываем только авторизованным -->
+                <!-- Кнопки управления показываем только авторизованным -->
                 {% if user.is_authenticated %}
                 <div class="card-footer bg-transparent">
                     <!-- Кнопки редактирования и удаления (только для владельца) -->
@@ -142,7 +152,7 @@
             <div class="card-body py-5">
                 <h3 class="text-muted">😴 Товаров пока нет</h3>
 
-                <!-- 👇 Разные сообщения для авторизованных и анонимных -->
+                <!-- Разные сообщения для авторизованных и анонимных -->
                 {% if user.is_authenticated %}
                     <p class="text-muted">Добавьте первый товар, чтобы начать работу</p>
                     <a href="{% url 'product_create' %}" class="btn btn-primary mt-3">

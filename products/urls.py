@@ -9,6 +9,9 @@ urlpatterns = [
     path("", views.ProductListView.as_view(), name="product_list"),
     path("products/create/", views.ProductCreateView.as_view(), name="product_create"),
     path(
+        "products/<int:pk>/", views.ProductDetailView.as_view(), name="product_detail"
+    ),
+    path(
         "products/<int:pk>/update/",
         views.ProductUpdateView.as_view(),
         name="product_update",
@@ -28,4 +31,12 @@ urlpatterns = [
         views.ProductPublishView.as_view(),
         name="product_publish",
     ),
+    path("categories/", views.CategoryListView.as_view(), name="category_list"),
+    path(
+        "category/<slug:category_slug>/",
+        views.ProductsByCategoryView.as_view(),
+        name="products_by_category",
+    ),
+    path("cache-debug/", views.cache_debug_view, name="cache_debug"),
+    path("cache-info/", views.cache_info_view, name="cache_info"),
 ]

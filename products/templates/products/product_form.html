@@ -18,7 +18,7 @@
                 </h4>
             </div>
             <div class="card-body">
-                <!-- 👇 ДОБАВЛЯЕМ enctype для загрузки файлов -->
+                <!-- ДОБАВЛЯЕМ enctype для загрузки файлов -->
                 <form method="post" novalidate enctype="multipart/form-data">
                     {% csrf_token %}
 
@@ -36,7 +36,7 @@
                             {{ field.label }}
                         </label>
 
-                        <!-- 👇 Особый вывод для поля изображения -->
+                        <!-- Особый вывод для поля изображения -->
                         {% if field.name == 'image' and object.image %}
                             <div class="mb-2">
                                 <img src="{{ object.image.url }}" alt="{{ object.name }}"
