@@ -1,0 +1,33 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Требуется авторизация - ShopMod{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">🔐 Требуется авторизация</h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <h5>Доступ ограничен</h5>
+                    <p class="text-muted">Для выполнения этого действия необходимо войти в систему.</p>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">
+                        🔑 Войти в систему
+                    </a>
+                    <a href="{% url 'register' %}" class="btn btn-outline-secondary">
+                        📝 Зарегистрироваться
+                    </a>
+                    <a href="{% url 'product_list' %}" class="btn btn-outline-dark">
+                        ← Назад к товарам
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

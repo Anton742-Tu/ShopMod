@@ -1,0 +1,128 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Редактирование профиля - ShopMod{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">✏️ Редактирование профиля</h4>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-light btn-sm">
+                        ← Назад к профилю
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Блок с текущим аватаром -->
+                    {% if user.avatar %}
+                    <div class="text-center mb-4">
+                        <div class="mb-2">
+                            <strong>Текущий аватар:</strong>
+                        </div>
+                        <img src="{{ user.avatar.url }}"
+                             alt="{{ user.email }}"
+                             class="img-thumbnail rounded-circle"
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <!-- Левая колонка - основная информация -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">👤 Основная информация</h5>
+
+                            <div class="mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    {{ form.email.label }}
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.email.errors %}
+                                            <div>⚠️ {{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    {{ form.username.label }}
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.help_text %}
+                                    <div class="form-text">{{ form.username.help_text }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    {{ form.first_name.label }}
+                                </label>
+                                {{ form.first_name }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    {{ form.last_name.label }}
+                                </label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <!-- Правая колонка - контактная информация и аватар -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">📞 Контактная информация</h5>
+
+                            <div class="mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                    {{ form.phone.label }}
+                                </label>
+                                {{ form.phone }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.country.id_for_label }}" class="form-label">
+                                    {{ form.country.label }}
+                                </label>
+                                {{ form.country }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.avatar.id_for_label }}" class="form-label">
+                                    {{ form.avatar.label }}
+                                </label>
+                                {{ form.avatar }}
+                                {% if form.avatar.help_text %}
+                                    <div class="form-text">{{ form.avatar.help_text }}</div>
+                                {% endif %}
+                                {% if form.avatar.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.avatar.errors %}
+                                            <div>⚠️ {{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            💾 Сохранить изменения
+                        </button>
+                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-lg">
+                            ❌ Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Товары в категории {{ category.name }} - ShopMod{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Все товары</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'category_list' %}">Категории</a></li>
+                <li class="breadcrumb-item active">{{ category.name }}</li>
+            </ol>
+        </nav>
+        <h1>📁 {{ category.name }}</h1>
+        {% if category.description %}
+            <p class="text-muted">{{ category.description }}</p>
+        {% endif %}
+    </div>
+    <span class="badge bg-primary fs-6">{{ products.count }} товаров</span>
+</div>
+
+<!-- Список товаров (можно переиспользовать из product_list.html) -->
+{% if products %}
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description|truncatewords:15|default:"Описание отсутствует" }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="text-primary">{{ product.price }} ₽</strong>
+                        <a href="{% url 'product_detail' product.pk %}" class="btn btn-outline-primary btn-sm">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        🛒 В этой категории пока нет товаров
+    </div>
+{% endif %}
+
+<!-- Боковая панель с категориями -->
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📂 Все категории</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for cat in all_categories %}
+                <a href="{{ cat.get_absolute_url }}"
+                   class="list-group-item list-group-item-action {% if cat.slug == category.slug %}active{% endif %}">
+                    {{ cat.name }}
+                    <span class="badge bg-secondary float-end">{{ cat.products_count }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
